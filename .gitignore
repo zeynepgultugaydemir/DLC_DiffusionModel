@@ -1,0 +1,3 @@
+# Ignore experimental scripts, checkpoints and data files
+scripts/*
+data/*
