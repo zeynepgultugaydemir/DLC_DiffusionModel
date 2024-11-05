@@ -1,3 +1,4 @@
 # Ignore experimental scripts, checkpoints and data files
 scripts/*
+checkpoints/*
 data/*
