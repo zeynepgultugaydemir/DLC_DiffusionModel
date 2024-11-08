@@ -1,3 +1,4 @@
+import os
 from collections import namedtuple
 from typing import Optional, Tuple
 
@@ -62,3 +63,7 @@ def make_dataloaders(
         train=DataLoader(train_dataset, batch_size=batch_size, shuffle=True, **kwargs),
         valid=DataLoader(valid_dataset, batch_size=2 * batch_size, **kwargs)
     )
+
+
+def get_data_folder_path() -> str:
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
