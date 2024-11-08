@@ -22,23 +22,21 @@ def load_dataset_and_make_dataloaders(
 
 
 def load_dataset(dataset_name='FashionMNIST', root_dir='data') -> Tuple[Dataset, Dataset, DataInfo]:
-    match dataset_name:
+    if dataset_name == 'FashionMNIST':
+        t = T.Compose([T.ToTensor(), T.Pad(2), T.Normalize(mean=(0.5,), std=(0.5,))])
+        train_dataset = FashionMNIST(root_dir, download=True, transform=t)
+        train_dataset, valid_dataset = random_split(train_dataset, [50000, 10000])
+        num_classes = 10
 
-        case 'FashionMNIST':
-            t = T.Compose([T.ToTensor(), T.Pad(2), T.Normalize(mean=(0.5,), std=(0.5,))])
-            train_dataset = FashionMNIST(root_dir, download=True, transform=t)
-            train_dataset, valid_dataset = random_split(train_dataset, [50000, 10000])
-            num_classes = 10
+    elif dataset_name == 'CelebA':
+        t = T.Compose(
+            [T.ToTensor(), T.CenterCrop(178), T.Resize(128, antialias=True), T.Normalize(mean=(0.5,), std=(0.5,))])
+        train_dataset = CelebA(root_dir, download=True, transform=t)
+        train_dataset, valid_dataset = random_split(train_dataset, [150000, 12770])
+        num_classes = None
 
-        case 'CelebA':
-            t = T.Compose(
-                [T.ToTensor(), T.CenterCrop(178), T.Resize(128, antialias=True), T.Normalize(mean=(0.5,), std=(0.5,))])
-            train_dataset = CelebA(root_dir, download=True, transform=t)
-            train_dataset, valid_dataset = random_split(train_dataset, [150000, 12770])
-            num_classes = None
-
-        case other:
-            raise RuntimeError('Unknown dataset: ' + other)
+    else:
+        raise RuntimeError('Unknown dataset: ' + dataset_name)
 
     x, _ = next(iter(DataLoader(train_dataset, batch_size=10000, shuffle=True)))
     _, c, h, w = x.size()
