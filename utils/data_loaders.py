@@ -70,4 +70,4 @@ def make_dataloaders(
 
 
 def get_data_folder_path() -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))

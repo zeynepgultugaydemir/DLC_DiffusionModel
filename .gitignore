@@ -1,5 +1,5 @@
-# Ignore experimental scripts, checkpoints, data and project files
-scripts/*
+# Ignore code drafts, checkpoints, data and project files
+drafts/*
 checkpoints/*
 data/*
 .idea/*
