@@ -73,8 +73,6 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
         training_loss = []
         print(datetime.datetime.now())
         for y, _ in data:
-            if y.shape[0] != batch_size:  # probably will find a better solution for this
-                continue
             sigma = sample_sigma(y.shape[0]).to(device)
             c_in, c_out, c_skip, c_noise = compute_c_functions(sigma, data_info.sigma_data)
 

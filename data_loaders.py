@@ -15,10 +15,12 @@ def load_dataset_and_make_dataloaders(
         root_dir: str,
         batch_size: int,
         num_workers: int = 0,
-        pin_memory: bool = False
+        pin_memory: bool = False,
+        drop_last=True
 ) -> Tuple[DataLoaders, DataInfo]:
     train_dataset, valid_dataset, data_info = load_dataset(dataset_name, root_dir)
-    dl = make_dataloaders(train_dataset, valid_dataset, data_info.num_classes, batch_size, num_workers, pin_memory)
+    dl = make_dataloaders(train_dataset, valid_dataset, data_info.num_classes, batch_size, num_workers, pin_memory,
+                          drop_last)
     return dl, data_info
 
 
@@ -53,11 +55,13 @@ def make_dataloaders(
         num_classes: Optional[int],
         batch_size: int,
         num_workers: int = 0,
-        pin_memory: bool = False
+        pin_memory: bool = False,
+        drop_last=True
+
 ) -> DataLoaders:
     collate_fn = default_collate if num_classes is not None else lambda batch: (default_collate(batch)[0], None)
     kwargs = {'collate_fn': collate_fn, 'num_workers': num_workers, 'persistent_workers': (num_workers > 0),
-              'pin_memory': pin_memory}
+              'pin_memory': pin_memory, 'drop_last': drop_last}
 
     return DataLoaders(
         train=DataLoader(train_dataset, batch_size=batch_size, shuffle=True, **kwargs),
