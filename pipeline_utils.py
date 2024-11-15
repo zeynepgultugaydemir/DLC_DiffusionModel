@@ -2,10 +2,9 @@ import datetime
 
 import numpy as np
 import torch
-from PIL import Image
-from torchvision.utils import make_grid
 
 from data_loaders import load_dataset_and_make_dataloaders, get_data_folder_path
+from model_utils import get_device
 
 
 def sample_sigma(n, loc=-1.2, scale=1.2, sigma_min=2e-3, sigma_max=80):
@@ -20,7 +19,8 @@ def build_sigma_schedule(steps, rho=7, sigma_min=2e-3, sigma_max=80):
 
 
 def add_noise(clean_image, sigma):
-    return clean_image + sigma * torch.randn_like(clean_image)
+    sigma_expanded = sigma.view(-1, 1, 1, 1).expand_as(clean_image)
+    return clean_image + sigma_expanded * torch.randn_like(clean_image)
 
 
 def denoise(model, x, c_funcs):
@@ -37,44 +37,31 @@ def compute_c_functions(sigma, sigma_data):
     return c_in, c_out, c_skip, c_noise
 
 
-def get_device():
-    """Return the appropriate device (GPU if available, otherwise CPU)"""
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-def save_model(model, path='model'):
-    """Save the model's state dictionary to the specified path."""
-    torch.save(model.state_dict(), path)
-    print(f"Model saved to {path}.")
-
-
-def save_image(x, file_name):
-    x = x.clamp(-1, 1).add(1).div(2).mul(255).byte()
-    x = make_grid(x)
-    x = Image.fromarray(x.permute(1, 2, 0).cpu().numpy())
-    x.save(f'Image {file_name}.png')
-
-
 def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=5, learning_rate=0.001,
                       validation=False, device=None):
     """
         Train a denoising model on the specified dataset.
     """
     device = device or get_device()
+
     data_path = get_data_folder_path()
     dl, data_info = load_dataset_and_make_dataloaders(dataset_name=dataset_name, root_dir=data_path,
-                                                      batch_size=batch_size)
+                                                      batch_size=batch_size, drop_last=True)
 
     criterion = torch.nn.MSELoss().to(device)
     optimizer = torch.optim.Adam(model.parameters(), learning_rate)
     data = dl.valid if validation else dl.train
     all_loss = []
     for epoch in range(epochs):
+        model.eval() if validation else model.train()
         training_loss = []
         print(datetime.datetime.now())
         for y, _ in data:
             sigma = sample_sigma(y.shape[0]).to(device)
             c_in, c_out, c_skip, c_noise = compute_c_functions(sigma, data_info.sigma_data)
+            c_in = c_in.view(-1, 1, 1, 1).expand(-1, y.size(1), y.size(2), y.size(3))
+            c_out = c_out.view(-1, 1, 1, 1).expand(-1, y.size(1), y.size(2), y.size(3))
+            c_skip = c_skip.view(-1, 1, 1, 1).expand(-1, y.size(1), y.size(2), y.size(3))
 
             y = y.to(device)
             x = add_noise(y, sigma).to(device)
@@ -83,13 +70,16 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
             target = (y - c_skip * x) / c_out
             loss = criterion(output, target)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            # Backpropagation and optimization (only if training)
+            if not validation:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
             training_loss.append(loss.item())
 
         all_loss.append(np.mean(training_loss))  # collecting the mean error for each epoch
-        print(f"Epoch {epoch + 1}, Loss: {np.mean(training_loss):.4f}")
+        print(f"Epoch {epoch + 1}, {'Validation' if validation else 'Training'} Loss: {np.mean(training_loss):.4f}")
 
     return all_loss
 
