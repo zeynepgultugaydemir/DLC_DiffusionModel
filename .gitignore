@@ -1,4 +1,7 @@
-# Ignore experimental scripts, checkpoints and data files
+# Ignore experimental scripts, checkpoints, data and project files
 scripts/*
 checkpoints/*
 data/*
+.idea/*
+__pycache__/
+venv/
