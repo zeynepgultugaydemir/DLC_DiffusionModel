@@ -41,3 +41,25 @@ def plot_and_save_losses(training_losses, validation_losses=None, save_path="los
     plt.savefig(save_path)
     plt.close()
     print(f"Plot saved to {save_path}.png")
+
+
+def plot_noising(noisy_images, sigmas):
+    noisy_images = noisy_images.flip(0)
+    sigmas = sigmas.flip(0)
+
+    num_levels, batch_size, channels, height, width = noisy_images.shape
+
+    fig, axes = plt.subplots(batch_size, num_levels)
+
+    for i in range(batch_size):
+        for j in range(num_levels):
+            image = noisy_images[j, i].squeeze().cpu().numpy()
+
+            ax = axes[i, j] if batch_size > 1 else axes[j]
+            ax.imshow(image, cmap="gray" if channels == 1 else None)
+            ax.axis("off")
+
+            if i == 0:
+                ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=10)
+
+    plt.show()

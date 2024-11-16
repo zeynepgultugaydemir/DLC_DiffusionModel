@@ -3,8 +3,8 @@ import datetime
 import numpy as np
 import torch
 
-from data_loaders import load_dataset_and_make_dataloaders, get_data_folder_path
-from model_utils import get_device
+from utils.data_loaders import get_data_folder_path, load_dataset_and_make_dataloaders
+from utils.model_utils import get_device
 
 
 def sample_sigma(n, loc=-1.2, scale=1.2, sigma_min=2e-3, sigma_max=80):
