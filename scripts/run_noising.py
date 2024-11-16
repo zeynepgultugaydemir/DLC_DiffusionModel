@@ -1,17 +1,13 @@
 import torch
 
 from utils.data_loaders import load_dataset_and_make_dataloaders
-from utils.model_utils import plot_noising
 from utils.pipeline_utils import build_sigma_schedule, get_device, add_noise
+from utils.workflow_utils import plot_noising
 
 device = get_device()
 
-dl, info = load_dataset_and_make_dataloaders(
-    dataset_name='FashionMNIST',
-    root_dir='../data',
-    batch_size=5,
-    num_workers=0,
-)
+dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=5,
+                                             num_workers=0, pin_memory=device)
 
 for y, label in dl.train:
     images = y.to(device)

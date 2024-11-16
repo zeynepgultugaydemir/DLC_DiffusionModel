@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from utils.data_loaders import get_data_folder_path, load_dataset_and_make_dataloaders
-from utils.model_utils import get_device
+from utils.workflow_utils import get_device
 
 
 def sample_sigma(n, loc=-1.2, scale=1.2, sigma_min=2e-3, sigma_max=80):
@@ -85,6 +85,8 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
 
 
 def sampling_pipeline(model, images, sigmas, sigma_data, device):
+    intermediate_images = []
+
     x = (torch.randn(*images.shape, device=device) * sigmas[0])
 
     for i, sigma in enumerate(sigmas):
@@ -97,5 +99,6 @@ def sampling_pipeline(model, images, sigmas, sigma_data, device):
         sigma_next = sigmas[i + 1] if i < len(sigmas) - 1 else 0
         d = (x - x_denoised) / sigma
         x = x + d * (sigma_next - sigma)
+        intermediate_images.append(x_denoised.detach().cpu())
 
-    return x
+    return x, intermediate_images

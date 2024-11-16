@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 from PIL import Image
+from matplotlib import animation
 from torchvision.utils import make_grid
 
 
@@ -62,4 +63,21 @@ def plot_noising(noisy_images, sigmas):
             if i == 0:
                 ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=10)
 
+    plt.show()
+
+
+def animate_denoising(intermediate_images, save_path='denoising'):
+    fig, ax = plt.subplots(figsize=(5, 5))
+
+    def update(i):
+        ax.clear()
+        image = intermediate_images[i][0, 0].numpy()
+        ax.imshow(image, cmap="gray")
+        ax.axis("off")
+        ax.set_title(f"Step {i + 1}")
+
+    ani = animation.FuncAnimation(fig, update, frames=len(intermediate_images), interval=50)
+
+    if save_path:
+        ani.save(f'{save_path}.gif', writer="pillow")
     plt.show()
