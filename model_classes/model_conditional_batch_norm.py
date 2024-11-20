@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.noise_embedding import NoiseEmbedding
+from model_classes.noise_embedding import NoiseEmbedding
 
 
 class ModelConditionalBatchNorm(nn.Module):

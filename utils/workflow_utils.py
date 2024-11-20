@@ -66,7 +66,7 @@ def plot_noising(noisy_images, sigmas):
     plt.show()
 
 
-def animate_denoising(intermediate_images, save_path='denoising'):
+def animate_denoising(intermediate_images, save_path='denoising', interval=50):
     fig, ax = plt.subplots(figsize=(5, 5))
 
     def update(i):
@@ -76,7 +76,7 @@ def animate_denoising(intermediate_images, save_path='denoising'):
         ax.axis("off")
         ax.set_title(f"Step {i + 1}")
 
-    ani = animation.FuncAnimation(fig, update, frames=len(intermediate_images), interval=50)
+    ani = animation.FuncAnimation(fig, update, frames=len(intermediate_images), interval=interval)
 
     if save_path:
         ani.save(f'{save_path}.gif', writer="pillow")
