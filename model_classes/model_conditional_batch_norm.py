@@ -13,6 +13,7 @@ class ModelConditionalBatchNorm(nn.Module):
         self.blocks = nn.ModuleList(
             [ResidualConditionalBatchNorm(nb_channels, cond_channels) for _ in range(num_blocks)])
         self.conv_out = nn.Conv2d(nb_channels, image_channels, kernel_size=3, padding=1)
+        nn.init.zeros_(self.conv_out.weight)
 
     def forward(self, noisy_input: torch.Tensor, c_noise: torch.Tensor) -> torch.Tensor:
         cond = self.noise_emb(c_noise)
@@ -36,6 +37,7 @@ class ResidualConditionalBatchNorm(nn.Module):
         self.cond_shift2 = nn.Linear(cond_channels, nb_channels)
 
         nn.init.zeros_(self.conv2.weight)
+        self.c_skip = nn.Parameter(torch.ones(1, nb_channels, 1, 1))
 
     def forward(self, x: torch.Tensor, cond: torch.Tensor) -> torch.Tensor:
         scale1 = self.cond_scale1(cond).view(-1, x.size(1), 1, 1)
@@ -46,4 +48,4 @@ class ResidualConditionalBatchNorm(nn.Module):
         shift2 = self.cond_shift2(cond).view(-1, x.size(1), 1, 1)
         y = self.conv2(F.relu(self.norm2(y)) * scale2 + shift2)
 
-        return x + y
+        return self.c_skip * x + y
