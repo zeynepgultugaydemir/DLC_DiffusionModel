@@ -1,8 +1,12 @@
+import os
+
 import matplotlib.pyplot as plt
 import torch
+import torchvision.transforms as T
 from PIL import Image
 from matplotlib import animation
 from torchvision.utils import make_grid
+from torchvision.utils import save_image
 
 
 def get_device():
@@ -16,11 +20,18 @@ def save_model(model, path='model'):
     print(f"Model saved to {path}.")
 
 
-def save_image(x, file_name):
+def save_generated_images(images, folder, prefix):
+    transform = T.Normalize(mean=[-1], std=[2])
+    for i, img in enumerate(images):
+        img = transform(img).clamp(0, 1)
+        save_image(img, os.path.join(folder, f"{prefix}_{i}.png"))
+
+
+def save_grid_image(x, file_name):
     x = x.clamp(-1, 1).add(1).div(2).mul(255).byte()
     x = make_grid(x)
     x = Image.fromarray(x.permute(1, 2, 0).cpu().numpy())
-    x.save(f'Image {file_name}.png')
+    x.save(f'{file_name}.png')
 
 
 def plot_and_save_losses(training_losses, validation_losses=None, save_path="loss_plot"):
@@ -49,8 +60,7 @@ def plot_noising(noisy_images, sigmas):
     sigmas = sigmas.flip(0)
 
     num_levels, batch_size, channels, height, width = noisy_images.shape
-
-    fig, axes = plt.subplots(batch_size, num_levels)
+    fig, axes = plt.subplots(batch_size, num_levels, figsize=(num_levels * 1.5, batch_size * 1.5))
 
     for i in range(batch_size):
         for j in range(num_levels):
@@ -61,8 +71,10 @@ def plot_noising(noisy_images, sigmas):
             ax.axis("off")
 
             if i == 0:
-                ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=10)
+                ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=12, pad=5)
 
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    plt.savefig('sample_noising.png', bbox_inches="tight")
     plt.show()
 
 

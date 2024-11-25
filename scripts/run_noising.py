@@ -6,8 +6,7 @@ from utils.workflow_utils import plot_noising
 
 device = get_device()
 
-dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=5,
-                                             num_workers=0, pin_memory=device)
+dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=8, num_workers=0, pin_memory=device)
 
 for y, label in dl.train:
     images = y.to(device)
@@ -15,7 +14,7 @@ for y, label in dl.train:
     print("Label batch shape:", label.shape)
     break
 
-sigmas = build_sigma_schedule(50, sigma_max=50)
+sigmas = build_sigma_schedule(50, sigma_max=50).to(device)
 indices = torch.linspace(0, len(sigmas) - 1, steps=10).long()
 
 noisy_images = [add_noise(images, sigma) for sigma in sigmas]
