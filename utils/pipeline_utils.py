@@ -38,7 +38,7 @@ def compute_c_functions(sigma, sigma_data):
 
 
 def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=5, learning_rate=0.001,
-                      validation=False, device=None):
+                      validation=False, device=None, demo=False):
     """
         Train a denoising model on the specified dataset.
     """
@@ -78,6 +78,9 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
 
             training_loss.append(loss.item())
 
+            if demo:
+                break
+
         all_loss.append(np.mean(training_loss))  # collecting the mean error for each epoch
         print(f"Epoch {epoch + 1}, {'Validation' if validation else 'Training'} Loss: {np.mean(training_loss):.4f}")
 
@@ -93,8 +96,8 @@ def sampling_pipeline(model, images, sigmas, sigma_data, device):
         with torch.no_grad():
             c_in, c_out, c_skip, c_noise = compute_c_functions(sigma, sigma_data)
 
-            x_denoised = denoise(model, x, c_funcs=(c_in.view(1, 1, 1, 1), c_out.view(1, 1, 1, 1),
-                                                    c_skip.view(1, 1, 1, 1), c_noise.view(1)))
+            x_denoised = denoise(model, x, c_funcs=(c_in.to(device).view(1, 1, 1, 1), c_out.to(device).view(1, 1, 1, 1),
+                                                    c_skip.to(device).view(1, 1, 1, 1), c_noise.to(device).view(1)))
 
         sigma_next = sigmas[i + 1] if i < len(sigmas) - 1 else 0
         d = (x - x_denoised) / sigma

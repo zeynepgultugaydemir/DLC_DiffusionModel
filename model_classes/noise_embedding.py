@@ -10,5 +10,7 @@ class NoiseEmbedding(nn.Module):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         assert input.ndim == 1
+        device = input.device
+        self.weight = self.weight.to(device)
         f = 2 * torch.pi * input.unsqueeze(1) @ self.weight
         return torch.cat([f.cos(), f.sin()], dim=-1)
