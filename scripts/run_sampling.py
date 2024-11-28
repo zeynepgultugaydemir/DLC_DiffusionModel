@@ -8,10 +8,11 @@ from utils.workflow_utils import animate_denoising, save_grid_image
 
 device = get_device()
 model = ModelConditionalBatchNorm(image_channels=1, nb_channels=128, num_blocks=6, cond_channels=32)
-model.load_state_dict(torch.load('../model_classes/models/Model_Conditional_BatchNorm2d.pth'))
+model.load_state_dict(torch.load('../model_classes/models/MCBN_img1_ch128_b6_cond_32.pth'))
 model.to(device)
 
-dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=32, num_workers=0, pin_memory=device)
+dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=32,
+                                             num_workers=0, pin_memory=device)
 
 for y, label in dl.train:
     images = y
