@@ -11,7 +11,7 @@ if __name__ == '__main__':
     device = get_device()
 
     model = ModelConditionalBatchNorm(image_channels=1, nb_channels=128, num_blocks=8, cond_channels=64)
-    model.load_state_dict(torch.load('../model_classes/models/MCBN_img1_ch128_b8_cond64.pth', map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load('../model_classes/models/MCBN_ch128_b8_cond64.pth', map_location=torch.device('cpu')))
     model.to(device)
 
     dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=128,
