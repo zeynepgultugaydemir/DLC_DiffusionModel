@@ -23,9 +23,18 @@ def add_noise(clean_image, sigma):
     return clean_image + sigma_expanded * torch.randn_like(clean_image)
 
 
-def denoise(model, x, c_funcs):
+def denoise(model, x, c_funcs, class_vector=None):
     c_in, c_out, c_skip, c_noise = c_funcs
-    return c_skip * x + c_out * model.forward(c_in * x, c_noise)
+
+    if class_vector is not None:
+        try:
+            x_denoised = model.forward(c_in * x, c_noise, class_vector=class_vector)
+        except TypeError:
+            x_denoised = model.forward(c_in * x, c_noise)
+    else:
+        x_denoised = model.forward(c_in * x, c_noise)
+
+    return c_skip * x + c_out * x_denoised
 
 
 def compute_c_functions(sigma, sigma_data):
@@ -38,7 +47,7 @@ def compute_c_functions(sigma, sigma_data):
 
 
 def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=5, learning_rate=0.001,
-                      validation=False, device=None, demo=False):
+                      validation=False, device=None, demo=False, num_classes=None):
     """
         Train a denoising model on the specified dataset.
     """
@@ -56,7 +65,7 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
         model.eval() if validation else model.train()
         training_loss = []
         print(datetime.datetime.now())
-        for y, _ in data:
+        for y, labels in data:
             sigma = sample_sigma(y.shape[0]).to(device)
             c_in, c_out, c_skip, c_noise = compute_c_functions(sigma, data_info.sigma_data)
             c_in = c_in.view(-1, 1, 1, 1).expand(-1, y.size(1), y.size(2), y.size(3))
@@ -64,9 +73,20 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
             c_skip = c_skip.view(-1, 1, 1, 1).expand(-1, y.size(1), y.size(2), y.size(3))
 
             y = y.to(device)
+            labels = labels.to(device)
             x = add_noise(y, sigma).to(device)
 
-            output = model.forward(c_in * x, c_noise)
+            if num_classes is not None:
+                class_vector = torch.zeros((labels.size(0), num_classes), device=device)
+                class_vector.scatter_(1, labels.view(-1, 1), 1)
+            else:
+                class_vector = None
+
+            if class_vector is not None:
+                output = model.forward(c_in * x, c_noise, class_vector=class_vector)
+            else:
+                output = model.forward(c_in * x, c_noise)
+
             target = (y - c_skip * x) / c_out
             loss = criterion(output, target)
 
@@ -87,17 +107,25 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
     return all_loss
 
 
-def sampling_pipeline(model, images, sigmas, sigma_data, device):
+def sampling_pipeline(model, images, sigmas, sigma_data, device, target_class=None, num_classes=None):
     intermediate_images = []
 
     x = (torch.randn(*images.shape, device=device) * sigmas[0])
+
+    if target_class is not None and num_classes is not None:
+        batch_size = images.size(0)
+        class_vector = torch.zeros((batch_size, num_classes), device=device)
+        class_vector[torch.arange(batch_size), target_class] = 1
+    else:
+        class_vector = None
 
     for i, sigma in enumerate(sigmas):
         with torch.no_grad():
             c_in, c_out, c_skip, c_noise = compute_c_functions(sigma, sigma_data)
 
             x_denoised = denoise(model, x, c_funcs=(c_in.to(device).view(1, 1, 1, 1), c_out.to(device).view(1, 1, 1, 1),
-                                                    c_skip.to(device).view(1, 1, 1, 1), c_noise.to(device).view(1)))
+                                                    c_skip.to(device).view(1, 1, 1, 1), c_noise.to(device).view(1)),
+                                 class_vector=class_vector)
 
         sigma_next = sigmas[i + 1] if i < len(sigmas) - 1 else 0
         d = (x - x_denoised) / sigma
