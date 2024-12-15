@@ -107,18 +107,13 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
     return all_loss
 
 
-def sampling_pipeline(model_config, images, sigmas, sigma_data, device, target=None):
-    model = model_config['class'].to(device)
-    model.load_state_dict(torch.load(f'../model_classes/models/{model_config["file"]}', map_location=torch.device('cpu')))
-    model.to(device)
-    model.eval()
-
+def sampling_pipeline(model, images, sigmas, sigma_data, device, target=None, conditional=None):
     intermediate_images = []
     num_classes = 10
     batch_size = images.size(0)
     x = (torch.randn(*images.shape, device=device) * sigmas[0])
 
-    if model_config['conditional']:
+    if conditional:
         if target:
             class_vector = torch.zeros((batch_size, num_classes), device=device)
             class_vector[torch.arange(batch_size), target] = 1

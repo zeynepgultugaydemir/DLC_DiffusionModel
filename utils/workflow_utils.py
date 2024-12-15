@@ -75,7 +75,7 @@ def plot_noising(noisy_images, sigmas):
                 ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=12, pad=5)
 
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    plt.savefig('sample_noising.png', bbox_inches="tight")
+    plt.savefig('../images/outputs/sample_noising.png', bbox_inches="tight")
     plt.show()
 
 
@@ -114,7 +114,6 @@ def map_name_to_class(class_name):
     class_name = class_name.lower()
 
     if class_name in class_mapping:
-        print(f'Generating images of {class_name}...')
         return class_mapping[class_name]
 
     possible_matches = list(class_mapping.keys())

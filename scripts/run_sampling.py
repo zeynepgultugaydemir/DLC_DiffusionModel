@@ -1,3 +1,4 @@
+import torch
 from pytorch_fid import fid_score
 
 from utils.config import MODEL_CONFIGS
@@ -30,11 +31,17 @@ def run_sampling(model_config, evaluate=False):
 
     sigmas = build_sigma_schedule(50)
 
-    image, intermediate_images = sampling_pipeline(model_config, next(iter(dl.train))[0], sigmas, info.sigma_data, device=device, target=target)
+    model = model_config['class'].to(device)
+    model.load_state_dict(torch.load(f'../model_classes/models/{model_config["file"]}', map_location=torch.device('cpu')))
+    model.to(device)
+    model.eval()
+
+    image, intermediate_images = sampling_pipeline(model, next(iter(dl.train))[0], sigmas, info.sigma_data, device=device, target=target,
+                                                   conditional=model_config['conditional'])
 
     if evaluate:
-        real_folder = "../drafts/fid_evaluation/real_images"
-        generated_folder = "../drafts/fid_evaluation/generated_images"
+        real_folder = "../images/fid_evaluation/real_images"
+        generated_folder = "../images/fid_evaluation/generated_images"
         save_generated_images(image, generated_folder, "generated")
 
         for y, label in dl.train:
@@ -44,12 +51,13 @@ def run_sampling(model_config, evaluate=False):
         fid = fid_score.calculate_fid_given_paths([real_folder, generated_folder], batch_size=32, device=device, dims=2048)
         print(f"FID score: {fid:.2f}")
 
-    save_grid_image(image, 'loaded_model_images')
-    animate_denoising([img.cpu() for img in intermediate_images], save_path="loaded_model_denoising")
+    save_grid_image(image, '../images/outputs/loaded_model_images')
+    animate_denoising([img.cpu() for img in intermediate_images], save_path="../images/outputs/loaded_model_denoising_steps")
 
 
 if __name__ == '__main__':
+    evaluate = True
     model_config = MODEL_CONFIGS['ModelClassConditional4']
-    print(model_config['class'])
 
-    run_sampling(model_config, evaluate=True)
+    print(model_config['class'])
+    run_sampling(model_config, evaluate=evaluate)
