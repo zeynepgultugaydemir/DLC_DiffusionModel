@@ -1,20 +1,55 @@
-import torch
+from pytorch_fid import fid_score
 
-from model_classes.model_conditional_batch_norm import ModelConditionalBatchNorm
+from utils.config import MODEL_CONFIGS
 from utils.data_loaders import load_dataset_and_make_dataloaders
 from utils.pipeline_utils import get_device, build_sigma_schedule, sampling_pipeline
-from utils.workflow_utils import animate_denoising, save_grid_image
+from utils.workflow_utils import animate_denoising, save_grid_image, map_name_to_class, save_generated_images
 
-device = get_device()
-model = ModelConditionalBatchNorm(image_channels=1, nb_channels=128, num_blocks=6, cond_channels=32)
-model.load_state_dict(torch.load('../model_classes/models/MCBN_ch128_b6_cond32.pth'))
-model.to(device)
 
-dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=32,
-                                             num_workers=0, pin_memory=device)
+def run_sampling(model_config, evaluate=False):
+    target = None
+    device = get_device()
 
-sigmas = build_sigma_schedule(50, sigma_max=50)
-image, intermediate_images = sampling_pipeline(model, next(iter(dl.train))[0], sigmas, info.sigma_data, device=device)
+    if model_config['conditional']:
+        while True:
+            user_input = input("Enter the desired target class name (e.g., 't-shirt', 'dress', 'sneaker', etc.): ").strip()
 
-save_grid_image(image, 'loaded_model_images')
-animate_denoising([img.cpu() for img in intermediate_images], save_path="loaded_model_denoising")
+            if user_input != '':
+                mapped_class = map_name_to_class(user_input)
+                if isinstance(mapped_class, int):
+                    target = mapped_class
+                    break
+                elif isinstance(mapped_class, str):
+                    print(mapped_class)
+            else:
+                print("No input provided. Proceeding without a specified class.")
+                break
+
+    dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=32, num_workers=0, pin_memory=device,
+                                                 target_class=target)
+
+    sigmas = build_sigma_schedule(50)
+
+    image, intermediate_images = sampling_pipeline(model_config, next(iter(dl.train))[0], sigmas, info.sigma_data, device=device, target=target)
+
+    if evaluate:
+        real_folder = "../drafts/fid_evaluation/real_images"
+        generated_folder = "../drafts/fid_evaluation/generated_images"
+        save_generated_images(image, generated_folder, "generated")
+
+        for y, label in dl.train:
+            save_generated_images(y, real_folder, "real")
+            break
+
+        fid = fid_score.calculate_fid_given_paths([real_folder, generated_folder], batch_size=32, device=device, dims=2048)
+        print(f"FID score: {fid:.2f}")
+
+    save_grid_image(image, 'loaded_model_images')
+    animate_denoising([img.cpu() for img in intermediate_images], save_path="loaded_model_denoising")
+
+
+if __name__ == '__main__':
+    model_config = MODEL_CONFIGS['ModelClassConditional4']
+    print(model_config['class'])
+
+    run_sampling(model_config, evaluate=True)

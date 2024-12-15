@@ -1,3 +1,4 @@
+import difflib
 import os
 
 import matplotlib.pyplot as plt
@@ -93,3 +94,33 @@ def animate_denoising(intermediate_images, save_path='denoising', interval=50):
     if save_path:
         ani.save(f'{save_path}.gif', writer="pillow")
     plt.show()
+
+
+def map_name_to_class(class_name):
+    class_synonyms = {
+        0: ["t-shirt", "t-shirt", "tshirt", "top", "tee"],
+        1: ["trouser", "trousers", "pants", ''],
+        2: ["pullover", "sweater", "jumper"],
+        3: ["dress"],
+        4: ["coat", "jacket"],
+        5: ["sandal", "sandals", "flip-flop", "flip-flops", "high heels"],
+        6: ["shirt", "button-up", "blouse"],
+        7: ["sneaker", "sneakers", "trainer", "trainers", "running shoe", "running shoes"],
+        8: ["bag", "handbag", "purse"],
+        9: ["ankle boot", "ankle boots", "boot", "boots"],
+    }
+
+    class_mapping = {synonym.lower(): class_number for class_number, synonyms in class_synonyms.items() for synonym in synonyms}
+    class_name = class_name.lower()
+
+    if class_name in class_mapping:
+        print(f'Generating images of {class_name}...')
+        return class_mapping[class_name]
+
+    possible_matches = list(class_mapping.keys())
+    closest_match = difflib.get_close_matches(class_name, possible_matches, n=1, cutoff=0.6)
+
+    if closest_match:
+        return f"Class name {class_name} not found. Did you mean '{closest_match[0]}'?"
+    else:
+        return "Class name not found."

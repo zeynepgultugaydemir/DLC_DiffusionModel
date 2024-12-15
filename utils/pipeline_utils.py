@@ -107,15 +107,25 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
     return all_loss
 
 
-def sampling_pipeline(model, images, sigmas, sigma_data, device, target_class=None, num_classes=None):
-    intermediate_images = []
+def sampling_pipeline(model_config, images, sigmas, sigma_data, device, target=None):
+    model = model_config['class'].to(device)
+    model.load_state_dict(torch.load(f'../model_classes/models/{model_config["file"]}', map_location=torch.device('cpu')))
+    model.to(device)
+    model.eval()
 
+    intermediate_images = []
+    num_classes = 10
+    batch_size = images.size(0)
     x = (torch.randn(*images.shape, device=device) * sigmas[0])
 
-    if target_class is not None and num_classes is not None:
-        batch_size = images.size(0)
-        class_vector = torch.zeros((batch_size, num_classes), device=device)
-        class_vector[torch.arange(batch_size), target_class] = 1
+    if model_config['conditional']:
+        if target:
+            class_vector = torch.zeros((batch_size, num_classes), device=device)
+            class_vector[torch.arange(batch_size), target] = 1
+        else:
+            # Conditional model without target class input, randomly generating a mix of classes
+            class_vector = torch.randint(0, 2, (batch_size, num_classes), device=device, dtype=torch.float32)
+            class_vector /= class_vector.sum(dim=1, keepdim=True) + 1e-6
     else:
         class_vector = None
 
