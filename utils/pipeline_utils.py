@@ -73,10 +73,10 @@ def training_pipeline(model, dataset_name="FashionMNIST", batch_size=32, epochs=
             c_skip = c_skip.view(-1, 1, 1, 1).expand(-1, y.size(1), y.size(2), y.size(3))
 
             y = y.to(device)
-            labels = labels.to(device)
             x = add_noise(y, sigma).to(device)
 
             if num_classes is not None:
+                labels = labels.to(device)
                 class_vector = torch.zeros((labels.size(0), num_classes), device=device)
                 class_vector.scatter_(1, labels.view(-1, 1), 1)
             else:

@@ -6,7 +6,7 @@ from utils.pipeline_utils import get_device, build_sigma_schedule, sampling_pipe
 from utils.workflow_utils import animate_denoising, plot_and_save_losses, save_grid_image, save_model, map_name_to_class
 
 
-def run_training(model_type, batch_size, target=None, demo=True):
+def run_training(model_type, dataset_name, batch_size, target=None, demo=True):
     if model_type == 'base':
         model = Model(**model_kwargs)
     elif model_type == 'noisecond':
@@ -17,11 +17,11 @@ def run_training(model_type, batch_size, target=None, demo=True):
 
     device = get_device()
     model.to(device)
-    dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=batch_size, num_workers=0,
+    dl, info = load_dataset_and_make_dataloaders(dataset_name=dataset_name, root_dir='../data', batch_size=batch_size, num_workers=0,
                                                  pin_memory=device)
 
-    train_loss = training_pipeline(model, epochs=5, device=device, demo=demo)
-    val_loss = training_pipeline(model, epochs=5, validation=True, device=device, demo=demo)
+    train_loss = training_pipeline(model, dataset_name=dataset_name, epochs=5, batch_size=batch_size, device=device, demo=demo)
+    val_loss = training_pipeline(model, dataset_name=dataset_name, epochs=5, batch_size=batch_size, validation=True, device=device, demo=demo)
 
     sigmas = build_sigma_schedule(50, sigma_max=50)
     image, intermediate_images = sampling_pipeline(model, next(iter(dl.train))[0], sigmas, info.sigma_data, target=target, device=device)
@@ -34,11 +34,12 @@ def run_training(model_type, batch_size, target=None, demo=True):
 
 
 if __name__ == '__main__':
-    model_type = 'classcond'  # Choose 'base', 'classcond' or 'noisecond'
-    target = 'jacket'  # Input desired target class if you've chosen class conditioned model
-    batch_size = 128
+    dataset_name = 'CelebA'  # cannot be run with class conditioned model
+    model_type = 'base'  # Choose 'base', 'classcond' or 'noisecond'
+    target = 'jacket'  # Input desired target class if you've chosen FashionMNIST on class conditioned model
+    batch_size = 8
     base_kwargs = {
-        'image_channels': 1,
+        'image_channels': 3,  # 3 if CelebA, 1 if FashionMNIST
         'nb_channels': 8,
         'num_blocks': 1,
         'cond_channels': 8
@@ -51,4 +52,4 @@ if __name__ == '__main__':
         model_kwargs = {**base_kwargs}
         target = None
 
-    run_training(model_type=model_type, batch_size=batch_size, target=target, demo=True)
+    run_training(model_type=model_type, dataset_name=dataset_name, batch_size=batch_size, target=target, demo=True)

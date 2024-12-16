@@ -33,6 +33,14 @@ def load_dataset(dataset_name='FashionMNIST', root_dir='data', target_class=None
         train_dataset, valid_dataset = random_split(train_dataset, [50000, 10000])
         num_classes = 10
 
+        # Apply filtering if target_class is provided
+        if target_class is not None:
+            train_indices = [i for i, (_, label) in enumerate(train_dataset) if label == target_class]
+            valid_indices = [i for i, (_, label) in enumerate(valid_dataset) if label == target_class]
+
+            train_dataset = torch.utils.data.Subset(train_dataset, train_indices)
+            valid_dataset = torch.utils.data.Subset(valid_dataset, valid_indices)
+
     elif dataset_name == 'CelebA':
         t = T.Compose(
             [T.ToTensor(), T.CenterCrop(178), T.Resize(128, antialias=True), T.Normalize(mean=(0.5,), std=(0.5,))])
@@ -42,14 +50,6 @@ def load_dataset(dataset_name='FashionMNIST', root_dir='data', target_class=None
 
     else:
         raise RuntimeError('Unknown dataset: ' + dataset_name)
-
-    # Apply filtering if target_class is provided
-    if target_class is not None:
-        train_indices = [i for i, (_, label) in enumerate(train_dataset) if label == target_class]
-        valid_indices = [i for i, (_, label) in enumerate(valid_dataset) if label == target_class]
-
-        train_dataset = torch.utils.data.Subset(train_dataset, train_indices)
-        valid_dataset = torch.utils.data.Subset(valid_dataset, valid_indices)
 
     x, _ = next(iter(DataLoader(train_dataset, batch_size=10000, shuffle=True)))
     _, c, h, w = x.size()

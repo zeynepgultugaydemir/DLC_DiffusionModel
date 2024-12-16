@@ -8,12 +8,16 @@ from utils.workflow_utils import plot_noising
 def run_noising():
     device = get_device()
 
-    dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=8, num_workers=0, pin_memory=device)
+    dl, info = load_dataset_and_make_dataloaders(dataset_name='CelebA', root_dir='../data', batch_size=8, num_workers=0, pin_memory=device)
+
+    for y, label in dl.train:
+        images = y.to(device)
+        break
 
     sigmas = build_sigma_schedule(50).to(device)
     indices = torch.linspace(0, len(sigmas) - 1, steps=10).long()
 
-    noisy_images = [add_noise(next(iter(dl.train))[0], sigma) for sigma in sigmas]
+    noisy_images = [add_noise(images, sigma) for sigma in sigmas]
     noisy_images_tensor = torch.stack(noisy_images, dim=0)
 
     plot_noising(noisy_images_tensor[indices], sigmas[indices])

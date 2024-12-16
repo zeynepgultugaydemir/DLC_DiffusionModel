@@ -68,14 +68,18 @@ def plot_noising(noisy_images, sigmas):
             image = noisy_images[j, i].squeeze().cpu().numpy()
 
             ax = axes[i, j] if batch_size > 1 else axes[j]
-            ax.imshow(image, cmap="gray" if channels == 1 else None)
+            if channels == 1:
+                ax.imshow(image, cmap="gray")
+            else:
+                image = image.transpose(1, 2, 0)
+                ax.imshow(image)
             ax.axis("off")
 
             if i == 0:
                 ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=12, pad=5)
 
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    plt.savefig('../images/outputs/sample_noising.png', bbox_inches="tight")
+    plt.savefig('../images/outputs/sample_noising_celeba.png', bbox_inches="tight")
     plt.show()
 
 
