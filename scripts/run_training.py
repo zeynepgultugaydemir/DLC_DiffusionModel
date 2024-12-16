@@ -30,12 +30,13 @@ def run_training(model_type, dataset_name, batch_size, target=None, demo=True):
     plot_and_save_losses(train_loss, val_loss, '../images/outputs/training_losses')
     save_grid_image(image, '../images/outputs/trained_model_images')
     animate_denoising([img.cpu() for img in intermediate_images], save_path="../images/outputs/trained_model_denoising_steps", interval=50)
-    save_model(model, "../model_classes/models/demo_model.pth")
+    save_model(model, f"../model_classes/models/demo_model_{dataset_name}.pth")
 
 
 if __name__ == '__main__':
-    dataset_name = 'CelebA'  # cannot be run with class conditioned model
-    model_type = 'base'  # Choose 'base', 'classcond' or 'noisecond'
+    demo = True
+    dataset_name = 'FashionMNIST'  # cannot be run with class conditioned model
+    model_type = 'classcond'  # Choose 'base', 'classcond' or 'noisecond'
     target = 'jacket'  # Input desired target class if you've chosen FashionMNIST on class conditioned model
     batch_size = 8
     base_kwargs = {
@@ -52,4 +53,4 @@ if __name__ == '__main__':
         model_kwargs = {**base_kwargs}
         target = None
 
-    run_training(model_type=model_type, dataset_name=dataset_name, batch_size=batch_size, target=target, demo=True)
+    run_training(model_type=model_type, dataset_name=dataset_name, batch_size=batch_size, target=target, demo=demo)

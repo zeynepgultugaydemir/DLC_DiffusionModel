@@ -79,7 +79,7 @@ def plot_noising(noisy_images, sigmas):
                 ax.set_title(f"σ={sigmas[j]:.2f}", fontsize=12, pad=5)
 
     plt.subplots_adjust(wspace=0.2, hspace=0.2)
-    plt.savefig('../images/outputs/sample_noising_celeba.png', bbox_inches="tight")
+    plt.savefig('../images/outputs/sample_noising.png', bbox_inches="tight")
     plt.show()
 
 

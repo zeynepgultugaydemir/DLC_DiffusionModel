@@ -26,6 +26,7 @@ def run_sampling(model_config, evaluate=False):
                 print("No input provided. Proceeding without a specified class.")
                 break
 
+    print('Generating samples...')
     dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='../data', batch_size=32, num_workers=0, pin_memory=device,
                                                  target_class=target)
 
