@@ -6,6 +6,7 @@ import torch
 import torchvision.transforms as T
 from PIL import Image
 from matplotlib import animation
+from matplotlib.widgets import Slider
 from torchvision.utils import make_grid
 from torchvision.utils import save_image
 
@@ -97,6 +98,29 @@ def animate_denoising(intermediate_images, save_path='denoising', interval=75):
 
     if save_path:
         ani.save(f'{save_path}.gif', writer="pillow")
+    plt.show()
+
+
+def interactive_denoising_plot(intermediate_images):
+    fig, ax = plt.subplots(figsize=(5, 5))
+    plt.subplots_adjust(left=0.25, bottom=0.25)
+
+    image = intermediate_images[0][0, 0].numpy()
+    im = ax.imshow(image, cmap="gray")
+    ax.axis("off")
+    ax.set_title("Step 1")
+
+    slider_ax = plt.axes((0.25, 0.1, 0.65, 0.03))
+    slider = Slider(ax=slider_ax, label='Step', valmin=1, valmax=len(intermediate_images), valinit=1, valstep=1)
+
+    def update(val):
+        idx = int(slider.val) - 1
+        new_image = intermediate_images[idx][0, 0].numpy()
+        im.set_data(new_image)
+        ax.set_title(f"Step {idx + 1}")
+        fig.canvas.draw_idle()
+
+    slider.on_changed(update)
     plt.show()
 
 
