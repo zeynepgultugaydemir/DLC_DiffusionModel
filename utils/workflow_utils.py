@@ -83,7 +83,7 @@ def plot_noising(noisy_images, sigmas):
     plt.show()
 
 
-def animate_denoising(intermediate_images, save_path='denoising', interval=50):
+def animate_denoising(intermediate_images, save_path='denoising', interval=75):
     fig, ax = plt.subplots(figsize=(5, 5))
 
     def update(i):
@@ -102,15 +102,15 @@ def animate_denoising(intermediate_images, save_path='denoising', interval=50):
 
 def map_name_to_class(class_name):
     class_synonyms = {
-        0: ["t-shirt", "t-shirt", "tshirt", "top", "tee"],
-        1: ["trouser", "trousers", "pants", ''],
-        2: ["pullover", "sweater", "jumper"],
-        3: ["dress"],
+        0: ["tshirt", "t-shirt", "t shirt", "top", "tee"],
+        1: ["trouser", "trousers", "pants"],
+        2: ["pullover", "pullovers", "sweater", "sweaters", "jumper", "jumpers"],
+        3: ["dress", "dresses"],
         4: ["coat", "jacket"],
-        5: ["sandal", "sandals", "flip-flop", "flip-flops", "high heels"],
-        6: ["shirt", "button-up", "blouse"],
+        5: ["sandal", "sandals", "flip-flop", "flip-flops", "heels", "high heels"],
+        6: ["shirt", "shirts", "button-up", "blouse"],
         7: ["sneaker", "sneakers", "trainer", "trainers", "running shoe", "running shoes"],
-        8: ["bag", "handbag", "purse"],
+        8: ["bag", "bags", "handbag", "handbags", "purse", "purses"],
         9: ["ankle boot", "ankle boots", "boot", "boots"],
     }
 

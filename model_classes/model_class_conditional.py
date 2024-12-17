@@ -9,21 +9,23 @@ class ModelClassConditional(nn.Module):
     def __init__(self, image_channels: int, nb_channels: int, num_blocks: int, cond_channels: int, num_classes: int = None) -> None:
         super().__init__()
         self.noise_emb = NoiseEmbedding(cond_channels)
+
+        # Mapping the class vector to the same dimensionality as the noise embedding
         self.class_emb = nn.Linear(num_classes, cond_channels) if num_classes is not None else None
         self.conv_in = nn.Conv2d(image_channels, nb_channels, kernel_size=3, padding=1)
-        self.blocks = nn.ModuleList(
-            [ResidualClassConditional(nb_channels, cond_channels) for _ in range(num_blocks)])
+        self.blocks = nn.ModuleList([ResidualClassConditional(nb_channels, cond_channels) for _ in range(num_blocks)])
         self.conv_out = nn.Conv2d(nb_channels, image_channels, kernel_size=3, padding=1)
         nn.init.zeros_(self.conv_out.weight)
 
     def forward(self, noisy_input: torch.Tensor, c_noise: torch.Tensor, class_vector=None) -> torch.Tensor:
         noise_embedding = self.noise_emb(c_noise)
 
+        # Combine noise and class embeddings if class_vector is provided
         if class_vector is not None:
             class_embedding = self.class_emb(class_vector)
             cond = noise_embedding + class_embedding
         else:
-            cond = noise_embedding
+            cond = noise_embedding  # Use only the noise embedding if no class conditioning
 
         x = self.conv_in(noisy_input)
         for block in self.blocks:

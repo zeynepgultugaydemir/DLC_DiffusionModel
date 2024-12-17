@@ -34,13 +34,13 @@ def run_training(model_type, dataset_name, batch_size, target=None, demo=True):
 
 
 if __name__ == '__main__':
-    demo = True
-    dataset_name = 'FashionMNIST'  # cannot be run with class conditioned model
-    model_type = 'classcond'  # Choose 'base', 'classcond' or 'noisecond'
-    target = 'jacket'  # Input desired target class if you've chosen FashionMNIST on class conditioned model
+    demo = True  # Set to True during presentation
+    dataset_name = 'FashionMNIST'  # Choose FashionMNIST or CelebA
+    model_type = 'classcond'  # Choose 'base', 'classcond' or 'noisecond' (CelebA cannot be run with classcond model)
+    target = 'jacket'  # Provide the desired target class if you've chosen FashionMNIST on class conditioned model
     batch_size = 8
     base_kwargs = {
-        'image_channels': 3,  # 3 if CelebA, 1 if FashionMNIST
+        'image_channels': 1,  # Set to 3 if CelebA, 1 if FashionMNIST
         'nb_channels': 8,
         'num_blocks': 1,
         'cond_channels': 8
