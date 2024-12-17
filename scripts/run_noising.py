@@ -5,10 +5,10 @@ from utils.pipeline_utils import build_sigma_schedule, get_device, add_noise
 from utils.workflow_utils import plot_noising
 
 
-def run_noising():
+def run_noising(dataset):
     device = get_device()
 
-    dl, info = load_dataset_and_make_dataloaders(dataset_name='CelebA', root_dir='../data', batch_size=8, num_workers=0, pin_memory=device)
+    dl, info = load_dataset_and_make_dataloaders(dataset_name=dataset, root_dir='../data', batch_size=8, num_workers=0, pin_memory=device)
 
     for y, label in dl.train:
         images = y.to(device)
@@ -24,4 +24,5 @@ def run_noising():
 
 
 if __name__ == '__main__':
-    run_noising()
+    dataset= 'CelebA'  # Select CelebA or FashionMNIST
+    run_noising(dataset)
