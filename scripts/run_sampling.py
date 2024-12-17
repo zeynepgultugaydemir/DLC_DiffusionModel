@@ -59,7 +59,12 @@ def run_sampling(model_config, batch_size, evaluate=False):
 if __name__ == '__main__':
     evaluate = False  # set to True if you would like to see the FID score
     batch_size = 64
-    model_config = MODEL_CONFIGS['ModelConditionalBatchNorm2']  # Please select the model config from config.py
-    print(model_config['class'])
 
+    # Please select the model from config.py:
+    # Model1, Model2,
+    # ModelConditionalBatchNorm1, ModelConditionalBatchNorm2,
+    # ModelClassConditional1, ModelClassConditional2, ModelClassConditional3, ModelClassConditional4
+    model_config = MODEL_CONFIGS['ModelConditionalBatchNorm2']
+
+    print(model_config['class'])
     run_sampling(model_config, batch_size=batch_size, evaluate=evaluate)
