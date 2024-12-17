@@ -24,5 +24,5 @@ def run_noising(dataset):
 
 
 if __name__ == '__main__':
-    dataset= 'CelebA'  # Select CelebA or FashionMNIST
+    dataset = 'FashionMNIST'  # Select CelebA or FashionMNIST
     run_noising(dataset)
