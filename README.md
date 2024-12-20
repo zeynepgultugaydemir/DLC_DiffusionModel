@@ -1,6 +1,6 @@
 # DLC_MiniProject1
 
-A diffusion model trained on FashionMNIST to generate images for the course 14X050 - Deep Learning.
+A diffusion model trained on FashionMNIST to generate images for the course [14X050 - Deep Learning](https://fleuret.org/dlc/).
 
 ## Sample Denoising
 
